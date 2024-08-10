@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import re
 import shutil
 import subprocess
@@ -105,7 +106,7 @@ def resolve_arg(arg_string: str) -> Args:
     return Args(name=args[0], hook_id=args[1], prefix=args[2], suffix=args[3])
 
 
-def main(
+def process(
     args: list[Args], pyproject: str | PathLike[str], pre_commit: str | PathLike[str]
 ) -> None:
     hooks = resolve_pre_commit(pre_commit)
@@ -122,9 +123,7 @@ def main(
                 raise ValueError(error_msg)
 
 
-if __name__ == "__main__":
-    import argparse
-
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--args", nargs="+", default=[])
     parser.add_argument("-p", "--pyproject", type=str, default="pyproject.toml")
@@ -137,4 +136,4 @@ if __name__ == "__main__":
     version_args = [resolve_arg(arg) for arg in args_string]
     pyproject, pre_commit = args.pyproject, args.pre_commit
 
-    main(version_args, pyproject, pre_commit)
+    process(version_args, pyproject, pre_commit)

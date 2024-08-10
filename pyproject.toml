@@ -8,7 +8,7 @@ requires-python = ">= 3.12"
 dependencies = [
     "pre-commit>=3.8.0",
 ]
-scripts = { executive = "sync_rye_pre_commit.sync_rye_pre_commit" }
+scripts = { executive = "sync_rye_pre_commit.cli:main" }
 
 [tool.rye]
 managed = true
