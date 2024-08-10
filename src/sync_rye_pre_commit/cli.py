@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+from enum import IntEnum
 from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NotRequired, Required, TypedDict
@@ -42,6 +43,13 @@ class Args(TypedDict):
     suffix: NotRequired[str]
 
 
+class ExitCode(IntEnum):
+    UNKNOWN = 999
+    MISSING = 127
+    PARSING = 1
+    MISMATCH = 2
+
+
 def create_version_pattern(name: str) -> re.Pattern[str]:
     text = rf"{_RE_VERSION.format(name=name)}"
     return re.compile(text)
@@ -67,7 +75,11 @@ def resolve_pyproject(
         rye_process.check_returncode()
     except subprocess.CalledProcessError as exc:
         logger.error("Rye lock failed: %s", exc.stderr)  # noqa: TRY400
-        sys.exit(exc.returncode)
+        if exc.returncode == ExitCode.MISSING.value:
+            sys.exit(ExitCode.MISSING)
+        if exc.returncode == ExitCode.PARSING.value:
+            sys.exit(ExitCode.PARSING)
+        sys.exit(ExitCode.UNKNOWN)
 
     return temp_directory / "requirements-dev.lock"
 
@@ -86,7 +98,7 @@ def find_version(name: str, lock_file: str | PathLike[str]) -> str:
     match = pattern.search(lock)
     if match is None:
         logger.error("Package %s not found in lock file", name)
-        sys.exit(1)
+        sys.exit(ExitCode.PARSING)
 
     return match.group("version")
 
@@ -171,10 +183,10 @@ def process(
     if error_count:
         for error in non_null_errors:
             logger.error(*error)
-        sys.exit(1)
+        sys.exit(ExitCode.MISMATCH)
 
 
-def main() -> None:
+def _main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--args", action="append", default=[])
     parser.add_argument("-p", "--pyproject", type=str, default="pyproject.toml")
@@ -191,3 +203,13 @@ def main() -> None:
     logger.setLevel(args.log_level)
 
     process(version_args, pyproject, pre_commit)
+
+
+def main() -> None:
+    try:
+        _main()
+    except SystemExit:
+        raise
+    except BaseException as exc:  # noqa: BLE001
+        logger.critical("Unexpected error:: %s, %s", type(exc), exc)
+        sys.exit(ExitCode.UNKNOWN)
