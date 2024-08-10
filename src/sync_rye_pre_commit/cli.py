@@ -12,8 +12,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NotRequired, Required, TypedDict
 
-from cfgv import ValidationError
-from pre_commit.clientlib import load_config
+from pre_commit.clientlib import InvalidConfigError, load_config
 
 from sync_rye_pre_commit.log import ColorFormatter
 
@@ -115,7 +114,7 @@ def find_version_in_pyproject(
 def resolve_pre_commit(pre_commit: str | PathLike[str]) -> dict[str, str]:
     try:
         config = load_config(pre_commit)
-    except ValidationError:
+    except InvalidConfigError:
         logger.critical("Failed to load pre-commit config")
         sys.exit(ExitCode.PARSING)
 
