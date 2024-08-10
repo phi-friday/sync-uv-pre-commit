@@ -126,9 +126,12 @@ def resolve_arg(arg_string: str) -> Args:
 def process(
     args: list[Args], pyproject: str | PathLike[str], pre_commit: str | PathLike[str]
 ) -> None:
-    logger.info('Processing args: "%s"', args)
-    logger.info('Processing pyproject: "%s"', pyproject)
-    logger.info('Processing pre_commit: "%s"', pre_commit)
+    if args:
+        logger.info("Processing args:")
+        for arg in args:
+            logger.info(" - `%s`", arg)
+    logger.info("Processing pyproject: `%s`", pyproject)
+    logger.info("Processing pre_commit: `%s`", pre_commit)
 
     hooks = resolve_pre_commit(pre_commit)
     with tempfile.TemporaryDirectory() as temp_directory:
