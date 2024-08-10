@@ -136,14 +136,22 @@ def process(
             version = find_version_in_pyproject(arg["name"], pyproject, temp_directory)
             version = f"{arg.get("prefix", "")}{version}{arg.get("suffix", "")}"
 
-            if hooks[arg["hook_id"]] != version:
-                logger.error(
-                    "Expected %s to be %s, but found %s",
+            if hooks[arg["hook_id"]] == version:
+                logger.info(
+                    "Expected %s to be %s, and found %s",
                     arg["hook_id"],
                     version,
                     hooks[arg["hook_id"]],
                 )
-                sys.exit(1)
+                continue
+
+            logger.error(
+                "Expected %s to be %s, but found %s",
+                arg["hook_id"],
+                version,
+                hooks[arg["hook_id"]],
+            )
+            sys.exit(1)
 
 
 def main() -> None:
