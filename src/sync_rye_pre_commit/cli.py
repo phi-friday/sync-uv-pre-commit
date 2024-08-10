@@ -165,8 +165,9 @@ def process(
     args_count = len(args)
     error_count = len(non_null_errors)
     success_count = args_count - error_count
+    level = logging.ERROR if error_count else logging.INFO
 
-    logger.info("Results:: %d success, %d errors", success_count, error_count)
+    logger.log(level, "Results:: %d success, %d errors", success_count, error_count)
     if error_count:
         for error in non_null_errors:
             logger.error(*error)
