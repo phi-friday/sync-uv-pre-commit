@@ -1,0 +1,42 @@
+name: lint
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - "**.py"
+      - ".github/workflows/lint.yaml"
+      - "pyproject.toml"
+      - "ruff.toml"
+      - "pyrightconfig.json"
+      - ".pre-commit-config.yaml"
+  pull_request:
+    branches: [dev, main]
+    paths:
+      - "**.py"
+      - ".github/workflows/lint.yaml"
+      - "pyproject.toml"
+      - "ruff.toml"
+      - "pyrightconfig.json"
+      - ".pre-commit-config.yaml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install rye
+        uses: phi-friday/install-rye@v2
+        id: install-rye
+        with:
+          python_version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          rye sync
+
+      - name: Code checks
+        run: |
+          rye run pre-commit run --all-files --show-diff-on-failure
