@@ -1,7 +1,8 @@
 repos:
   - hooks:
       - id: sync-rye-pre-commit
-        args: []
+        args:
+          - -a ruff:ruff:v
     repo: https://github.com/phi-friday/sync-rye-pre-commit
     rev: main
 
@@ -12,7 +13,7 @@ repos:
         name: ruff-format
         args: [--check]
     repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.5.6
+    rev: v0.5.7
 
   - hooks:
       - id: pyright
