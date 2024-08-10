@@ -5,6 +5,7 @@ import logging
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from functools import lru_cache
 from pathlib import Path
@@ -49,8 +50,20 @@ def resolve_pyproject(
     new_pyproject = temp_directory / "pyproject.toml"
     shutil.copy(origin_pyproject, new_pyproject)
 
-    subprocess.run(["rye", "lock"], cwd=temp_directory, check=True)  # noqa: S603, S607
+    rye_process = subprocess.run(  # noqa: S603
+        ["rye", "lock"],  # noqa: S607
+        cwd=temp_directory,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
     shutil.rmtree(temp_directory / ".venv")
+    try:
+        rye_process.check_returncode()
+    except subprocess.CalledProcessError as exc:
+        logger.error("Rye lock failed: %s", exc.stderr)  # noqa: TRY400
+        sys.exit(exc.returncode)
+
     return temp_directory / "requirements-dev.lock"
 
 
