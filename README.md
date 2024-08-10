@@ -13,6 +13,12 @@ repos:
     rev: v0.1.4
 ```
 
+### args
+- `-a` or `--args`: `{library}[:{hook_id}[:{prefix}[:{suffix}]]]` (defaults: `[]`)
+- `-p` or `--pyproject`: `pyproject.toml` path (defaults: `pyproject.toml`)
+- `-P` or `--pre-commit`: `.pre-commit-config.yaml` path (defaults: `.pre-commit-config.yaml`)
+- `-l` or `--log-level`: log level (defaults: `INFO`)
+
 ## success output
 ```bash
 ❯ rye run pre-commit run --all-files --show-diff-on-failure --verbose
