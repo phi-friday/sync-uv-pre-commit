@@ -15,6 +15,7 @@ classifiers = [
 scripts = { sync_rye_pre_commit = "sync_rye_pre_commit.cli:main" }
 dependencies = [
     "pre-commit>=3.8.0",
+    "cfgv",
 ]
 
 [tool.rye]
