@@ -12,6 +12,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NotRequired, Required, TypedDict
 
+from cfgv import ValidationError
 from pre_commit.clientlib import load_config
 
 from sync_rye_pre_commit.log import ColorFormatter
@@ -112,7 +113,12 @@ def find_version_in_pyproject(
 
 @lru_cache
 def resolve_pre_commit(pre_commit: str | PathLike[str]) -> dict[str, str]:
-    config = load_config(pre_commit)
+    try:
+        config = load_config(pre_commit)
+    except ValidationError:
+        logger.critical("Failed to load pre-commit config")
+        sys.exit(ExitCode.PARSING)
+
     repos = config["repos"]
     return {hook["id"]: hook["rev"] for hook in resolve_hook(repos)}
 
