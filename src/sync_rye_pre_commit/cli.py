@@ -98,7 +98,7 @@ def resolve_hook(repos: list[dict[str, Any]]) -> Generator[Hook, None, None]:
 
 
 def resolve_arg(arg_string: str) -> Args:
-    args = arg_string.split(":")
+    args = arg_string.strip().split(":")
     size = len(args)
 
     if size == 1:
