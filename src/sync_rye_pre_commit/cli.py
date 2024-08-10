@@ -80,8 +80,8 @@ def find_version(name: str, lock_file: str | PathLike[str]) -> str:
 
     match = pattern.search(lock)
     if match is None:
-        error_msg = f"Package {name} not found in lock file"
-        raise ValueError(error_msg)
+        logger.error("Package %s not found in lock file", name)
+        sys.exit(1)
 
     return match.group("version")
 
@@ -137,11 +137,13 @@ def process(
             version = f"{arg.get("prefix", "")}{version}{arg.get("suffix", "")}"
 
             if hooks[arg["hook_id"]] != version:
-                error_msg = (
-                    f"Expected {arg["hook_id"]} to be {version}, "
-                    f"but found {hooks[arg["hook_id"]]}"
+                logger.error(
+                    "Expected %s to be %s, but found %s",
+                    arg["hook_id"],
+                    version,
+                    hooks[arg["hook_id"]],
                 )
-                raise ValueError(error_msg)
+                sys.exit(1)
 
 
 def main() -> None:
