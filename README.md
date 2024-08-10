@@ -1,4 +1,5 @@
 # sync-rye-pre-commit
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## how to use
 ```yaml
