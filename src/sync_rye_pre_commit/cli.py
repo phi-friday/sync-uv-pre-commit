@@ -25,7 +25,7 @@ _RE_VERSION = "{name}==(?P<version>.+)"
 logger = logging.getLogger("sync_rye_pre_commit")
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
-formatter = ColorFormatter(fmt="[{levelname:^8s}] - {message:s}", style="{")
+formatter = ColorFormatter(fmt="[{levelname:s}] - {message:s}", style="{")
 handler.setFormatter(formatter)
 logger.addHandler(handler)
 
