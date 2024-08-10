@@ -130,6 +130,7 @@ def main() -> None:
     parser.add_argument(
         "-P", "--pre-commit", type=str, default=".pre-commit-config.yaml"
     )
+    parser.add_argument("dummy", nargs="*")
 
     args = parser.parse_args()
     args_string: list[str] = args.args
