@@ -97,6 +97,7 @@ quote-style = "double"
 skip-magic-trailing-comma = true
 
 [lint.isort]
+known-local-folder = ["sync_rye_pre_commit"]
 required-imports = ["from __future__ import annotations"]
 # ruff format
 force-single-line = false
