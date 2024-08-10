@@ -9,7 +9,7 @@ repos:
           - "-a ruff:ruff:v:"
           - "-a ruff:ruff-format:v:"
     repo: https://github.com/phi-friday/sync-rye-pre-commit
-    rev: v0.1.0
+    rev: v0.1.4
 ```
 
 ## success output
