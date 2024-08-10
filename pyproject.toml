@@ -1,0 +1,33 @@
+[project]
+name = "sync-rye-pre-commit"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "phi", email = "phi.friday@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">= 3.12"
+dependencies = []
+
+[tool.rye]
+managed = true
+dev-dependencies = [
+    "ruff==0.5.7",
+    "pre-commit>=3.8.0",
+]
+
+[tool.rye.scripts]
+lint = { chain = ["lint:check", "lint:format"] }
+"lint:check" = "ruff check src --fix"
+"lint:format" = "ruff format src"
+check = "pre-commit run --all-files --show-diff-on-failure"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/sync_rye_pre_commit"]
