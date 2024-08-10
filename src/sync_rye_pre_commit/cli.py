@@ -134,8 +134,9 @@ def process(
     logger.info("Processing pre_commit: `%s`", pre_commit)
 
     hooks = resolve_pre_commit(pre_commit)
+    errors: list[tuple[str, str, str, str] | None] = [None] * len(args)
     with tempfile.TemporaryDirectory() as temp_directory:
-        for arg in args:
+        for index, arg in enumerate(args):
             version = find_version_in_pyproject(arg["name"], pyproject, temp_directory)
             version = f"{arg.get("prefix", "")}{version}{arg.get("suffix", "")}"
 
@@ -148,13 +149,17 @@ def process(
                 )
                 continue
 
-            logger.error(
+            errors[index] = (
                 "Expected %s to be %s, but found %s",
                 arg["hook_id"],
                 version,
                 hooks[arg["hook_id"]],
             )
-            sys.exit(1)
+
+    if any(errors):
+        for error in errors:
+            logger.error(*error)
+        sys.exit(1)
 
 
 def main() -> None:
