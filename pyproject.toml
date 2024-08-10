@@ -2,18 +2,19 @@
 name = "sync-rye-pre-commit"
 version = "0.1.0"
 description = "Add your description here"
-authors = [
-    { name = "phi", email = "phi.friday@gmail.com" }
-]
+authors = [{ name = "phi", email = "phi.friday@gmail.com" }]
 readme = "README.md"
 requires-python = ">= 3.12"
-dependencies = []
+dependencies = [
+    "pre-commit>=3.8.0",
+]
 
 [tool.rye]
 managed = true
+virtual = true
 dev-dependencies = [
     "ruff==0.5.7",
-    "pre-commit>=3.8.0",
+    "ipykernel>=6.29.5",
 ]
 
 [tool.rye.scripts]
@@ -30,4 +31,4 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sync_rye_pre_commit"]
+packages = [""]

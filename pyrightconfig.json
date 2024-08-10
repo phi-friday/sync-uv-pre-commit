@@ -1,7 +1,4 @@
 {
-    "include": [
-        "src/sync_rye_pre_commit",
-    ],
     "typeCheckingMode": "strict",
     "pythonVersion": "3.12",
     "pythonPlatform": "Linux",
