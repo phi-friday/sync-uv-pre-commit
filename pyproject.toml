@@ -22,7 +22,6 @@ managed = true
 virtual = true
 dev-dependencies = [
     "ruff==0.5.7",
-    "ipykernel>=6.29.5",
 ]
 
 [tool.rye.scripts]
