@@ -161,8 +161,14 @@ def process(
                 hooks[arg["hook_id"]],
             )
 
-    if any(errors):
-        for error in errors:
+    non_null_errors = [error for error in errors if error]
+    args_count = len(args)
+    error_count = len(non_null_errors)
+    success_count = args_count - error_count
+
+    logger.info("Results:: %d success, %d errors", success_count, error_count)
+    if error_count:
+        for error in non_null_errors:
             logger.error(*error)
         sys.exit(1)
 
