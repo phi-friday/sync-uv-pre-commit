@@ -3,6 +3,6 @@
     description: Sync rye and pre commit
     language: python
     language_version: "3.12"
-    entry: "python sync_rye_pre_commit.py"
+    entry: "sync_rye_pre_commit"
     types_or: [yaml, toml]
     minimum_pre_commit_version: "2.9.2"
