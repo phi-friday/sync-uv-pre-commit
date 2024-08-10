@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING, Any, NotRequired, Required, TypedDict
 
 from pre_commit.clientlib import load_config
 
+from sync_rye_pre_commit.log import ColorFormatter
+
 if TYPE_CHECKING:
     from collections.abc import Generator
     from os import PathLike
@@ -22,7 +24,10 @@ __all__ = []
 _RE_VERSION = "{name}==(?P<version>.+)"
 logger = logging.getLogger("sync_rye_pre_commit")
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
+handler = logging.StreamHandler()
+formatter = ColorFormatter("%(levelname)-8s: %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 
 class Hook(TypedDict, total=True):
