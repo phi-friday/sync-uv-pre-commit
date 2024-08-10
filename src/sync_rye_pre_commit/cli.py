@@ -148,7 +148,7 @@ def process(
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument("-a", "--args", nargs="+", default=[])
+    parser.add_argument("-a", "--args", action="append", default=[])
     parser.add_argument("-p", "--pyproject", type=str, default="pyproject.toml")
     parser.add_argument(
         "-P", "--pre-commit", type=str, default=".pre-commit-config.yaml"
