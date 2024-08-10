@@ -5,5 +5,5 @@
   language_version: "3.12"
   entry: "sync_rye_pre_commit"
   minimum_pre_commit_version: "2.9.2"
-  files: "pyproject\\.toml|\\.pre-commit-hooks\\.yaml"
   require_serial: true
+  always_run: true
