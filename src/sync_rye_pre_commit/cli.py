@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import logging
 import re
 import shutil
 import subprocess
@@ -18,6 +19,9 @@ if TYPE_CHECKING:
 __all__ = []
 
 _RE_VERSION = "{name}==(?P<version>.+)"
+logger = logging.getLogger("sync_rye_pre_commit")
+logger.setLevel(logging.INFO)
+logger.addHandler(logging.StreamHandler())
 
 
 class Hook(TypedDict, total=True):
@@ -109,6 +113,10 @@ def resolve_arg(arg_string: str) -> Args:
 def process(
     args: list[Args], pyproject: str | PathLike[str], pre_commit: str | PathLike[str]
 ) -> None:
+    logger.info('Processing args: "%s"', args)
+    logger.info('Processing pyproject: "%s"', pyproject)
+    logger.info('Processing pre_commit: "%s"', pre_commit)
+
     hooks = resolve_pre_commit(pre_commit)
     with tempfile.TemporaryDirectory() as temp_directory:
         for arg in args:
@@ -130,11 +138,13 @@ def main() -> None:
     parser.add_argument(
         "-P", "--pre-commit", type=str, default=".pre-commit-config.yaml"
     )
+    parser.add_argument("-l", "--log-level", type=str, default="INFO")
     parser.add_argument("dummy", nargs="*")
 
     args = parser.parse_args()
     args_string: list[str] = args.args
     version_args = [resolve_arg(arg) for arg in args_string]
     pyproject, pre_commit = args.pyproject, args.pre_commit
+    logger.setLevel(args.log_level)
 
     process(version_args, pyproject, pre_commit)
