@@ -22,9 +22,11 @@ Sync rye and pre commit..................................................Passed
 - hook id: sync-rye-pre-commit
 - duration: 0.34s
 
-Processing args: "[{'name': 'ruff', 'hook_id': 'ruff', 'prefix': 'v', 'suffix': ''}, {'name': 'ruff', 'hook_id': 'ruff-format', 'prefix': 'v', 'suffix': ''}]"
-Processing pyproject: "pyproject.toml"
-Processing pre_commit: ".pre-commit-config.yaml"
+Processing args:
+ - `{'name': 'ruff', 'hook_id': 'ruff', 'prefix': 'v', 'suffix': ''}`
+ - `{'name': 'ruff', 'hook_id': 'ruff-format', 'prefix': 'v', 'suffix': ''}`
+Processing pyproject: `pyproject.toml`
+Processing pre_commit: `.pre-commit-config.yaml`
 Expected ruff to be v0.5.7, and found v0.5.7
 Expected ruff-format to be v0.5.7, and found v0.5.7
 ```
