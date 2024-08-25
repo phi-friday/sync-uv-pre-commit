@@ -17,17 +17,11 @@ dependencies = [
     "pre-commit>=3.8.0",
 ]
 
-[tool.rye]
+[tool.uv]
 managed = true
 dev-dependencies = [
     "ruff==0.5.7",
 ]
-
-[tool.rye.scripts]
-lint = { chain = ["lint:check", "lint:format"] }
-"lint:check" = "ruff check src --fix"
-"lint:format" = "ruff format src"
-check = "pre-commit run --all-files --show-diff-on-failure"
 
 [build-system]
 requires = ["hatchling"]
@@ -37,4 +31,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
+packages = ["src/sync_rye_pre_commit"]
+
+[tool.hatch.build.targets.sdist]
 packages = ["src/sync_rye_pre_commit"]
