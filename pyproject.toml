@@ -1,7 +1,7 @@
 [project]
-name = "sync-rye-pre-commit"
+name = "sync-uv-pre-commit"
 version = "0.0.0"
-description = "Sync rye and pre commit"
+description = "Sync uv and pre commit"
 authors = [{ name = "phi", email = "phi.friday@gmail.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -12,7 +12,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
-scripts = { sync_rye_pre_commit = "sync_rye_pre_commit.cli:main" }
+scripts = { sync_uv_pre_commit = "sync_uv_pre_commit.cli:main" }
 dependencies = [
     "pre-commit>=3.8.0",
 ]
@@ -31,7 +31,7 @@ build-backend = "hatchling.build"
 allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/sync_rye_pre_commit"]
+packages = ["src/sync_uv_pre_commit"]
 
 [tool.hatch.build.targets.sdist]
-packages = ["src/sync_rye_pre_commit"]
+packages = ["src/sync_uv_pre_commit"]

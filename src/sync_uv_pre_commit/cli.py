@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, Any, NotRequired, Required, TypedDict
 
 from pre_commit.clientlib import InvalidConfigError, load_config
 
-from sync_rye_pre_commit.log import ColorFormatter
+from sync_uv_pre_commit.log import ColorFormatter
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 __all__ = []
 
 _RE_VERSION = "{name}==(?P<version>.+)"
-logger = logging.getLogger("sync_rye_pre_commit")
+logger = logging.getLogger("sync_uv_pre_commit")
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
 formatter = ColorFormatter(fmt="[{levelname:s}] - {message:s}", style="{")
@@ -63,8 +63,8 @@ def resolve_pyproject(
     new_pyproject = temp_directory / "pyproject.toml"
     shutil.copy(origin_pyproject, new_pyproject)
 
-    rye_process = subprocess.run(  # noqa: S603
-        ["rye", "lock"],  # noqa: S607
+    uv_process = subprocess.run(  # noqa: S603
+        ["uv", "lock"],  # noqa: S607
         cwd=temp_directory,
         check=False,
         capture_output=True,
@@ -72,9 +72,9 @@ def resolve_pyproject(
     )
     shutil.rmtree(temp_directory / ".venv")
     try:
-        rye_process.check_returncode()
+        uv_process.check_returncode()
     except subprocess.CalledProcessError as exc:
-        logger.error("Rye lock failed: %s", exc.stderr)  # noqa: TRY400
+        logger.error("uv lock failed: %s", exc.stderr)  # noqa: TRY400
         if exc.returncode == ExitCode.MISSING.value:
             sys.exit(ExitCode.MISSING)
         if exc.returncode == ExitCode.PARSING.value:
