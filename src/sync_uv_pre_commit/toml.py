@@ -11,17 +11,26 @@ if TYPE_CHECKING:
 __all__ = []
 
 
+def find_valid_extras(pyproject: dict[str, Any]) -> set[str]:
+    project: dict[str, Any] = pyproject["project"]
+    optional_dependencies: dict[str, list[str]] = project.setdefault(
+        "optional-dependencies", {}
+    )
+    return set(optional_dependencies.keys())
+
+
 def combine_dev_dependencies(
     pyproject: str | PathLike[str], destination: str | PathLike[str]
-) -> tuple[str, Path]:
+) -> tuple[str, Path, set[str]]:
     pyproject = Path(pyproject)
     destination = Path(destination)
 
     pyproject_obj = read_pyproject(pyproject)
     key, new_pyproject = dev_dependencies_to_dependencies(pyproject_obj)
     write_pyproject(new_pyproject, destination)
+    extras = find_valid_extras(new_pyproject)
 
-    return key, destination
+    return key, destination, extras
 
 
 def read_pyproject(pyproject: str | PathLike[str]) -> dict[str, Any]:

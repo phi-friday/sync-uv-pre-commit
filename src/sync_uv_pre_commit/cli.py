@@ -65,22 +65,13 @@ def resolve_pyproject(
     origin_pyproject, temp_directory = Path(pyproject), Path(temp_directory)
     new_pyproject = temp_directory / "pyproject.toml"
 
-    key, new_pyproject = combine_dev_dependencies(origin_pyproject, new_pyproject)
-    command = [
-        "uv",
-        "pip",
-        "compile",
-        new_pyproject.name,
-        "-o",
-        "requirements.txt",
-        "--extra",
-        key,
-    ]
-    if extras:
-        command = [
-            *command,
-            *chain.from_iterable(("--extra", extra) for extra in extras),
-        ]
+    key, new_pyproject, valid_extras = combine_dev_dependencies(
+        origin_pyproject, new_pyproject
+    )
+    command = ["uv", "pip", "compile", new_pyproject.name, "-o", "requirements.txt"]
+    extras = (key, *extras)
+    extras = tuple(extra for extra in extras if extra in valid_extras)
+    command = [*command, *chain.from_iterable(("--extra", extra) for extra in extras)]
 
     uv_process = subprocess.run(  # noqa: S603
         command, cwd=temp_directory, check=False, capture_output=True, text=True
