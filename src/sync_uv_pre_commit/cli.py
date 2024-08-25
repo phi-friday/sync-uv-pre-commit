@@ -8,6 +8,7 @@ import sys
 import tempfile
 from enum import IntEnum
 from functools import lru_cache
+from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, NotRequired, Required, TypedDict
 
@@ -57,28 +58,32 @@ def create_version_pattern(name: str) -> re.Pattern[str]:
 
 @lru_cache
 def resolve_pyproject(
-    pyproject: str | PathLike[str], temp_directory: str | PathLike[str]
+    pyproject: str | PathLike[str],
+    temp_directory: str | PathLike[str],
+    extras: tuple[str, ...],
 ) -> Path:
     origin_pyproject, temp_directory = Path(pyproject), Path(temp_directory)
     new_pyproject = temp_directory / "pyproject.toml"
 
     key, new_pyproject = combine_dev_dependencies(origin_pyproject, new_pyproject)
+    command = [
+        "uv",
+        "pip",
+        "compile",
+        new_pyproject.name,
+        "-o",
+        "requirements.txt",
+        "--extra",
+        key,
+    ]
+    if extras:
+        command = [
+            *command,
+            *chain.from_iterable(("--extra", extra) for extra in extras),
+        ]
 
     uv_process = subprocess.run(  # noqa: S603
-        [  # noqa: S607
-            "uv",
-            "pip",
-            "compile",
-            new_pyproject.name,
-            "-o",
-            "requirements.txt",
-            "--extra",
-            key,
-        ],
-        cwd=temp_directory,
-        check=False,
-        capture_output=True,
-        text=True,
+        command, cwd=temp_directory, check=False, capture_output=True, text=True
     )
     try:
         uv_process.check_returncode()
@@ -113,9 +118,12 @@ def find_version(name: str, lock_file: str | PathLike[str]) -> str:
 
 
 def find_version_in_pyproject(
-    name: str, pyproject: str | PathLike[str], temp_directory: str | PathLike[str]
+    name: str,
+    pyproject: str | PathLike[str],
+    temp_directory: str | PathLike[str],
+    extras: tuple[str, ...],
 ) -> str:
-    lock_file = resolve_pyproject(pyproject, temp_directory)
+    lock_file = resolve_pyproject(pyproject, temp_directory, extras)
     return find_version(name, lock_file)
 
 
@@ -155,7 +163,10 @@ def resolve_arg(arg_string: str) -> Args:
 
 
 def process(
-    args: list[Args], pyproject: str | PathLike[str], pre_commit: str | PathLike[str]
+    args: list[Args],
+    pyproject: str | PathLike[str],
+    pre_commit: str | PathLike[str],
+    extras: tuple[str, ...],
 ) -> None:
     if args:
         logger.info("Processing args:")
@@ -168,7 +179,9 @@ def process(
     errors: list[tuple[str, str, str, str] | None] = [None] * len(args)
     with tempfile.TemporaryDirectory() as temp_directory:
         for index, arg in enumerate(args):
-            version = find_version_in_pyproject(arg["name"], pyproject, temp_directory)
+            version = find_version_in_pyproject(
+                arg["name"], pyproject, temp_directory, extras
+            )
             version = f"{arg.get("prefix", "")}{version}{arg.get("suffix", "")}"
 
             if hooks[arg["hook_id"]] == version:
@@ -208,15 +221,16 @@ def _main() -> None:
         "-P", "--pre-commit", type=str, default=".pre-commit-config.yaml"
     )
     parser.add_argument("-l", "--log-level", type=str, default="INFO")
+    parser.add_argument("-e", "--extra", action="append", default=[])
     parser.add_argument("dummy", nargs="*")
 
     args = parser.parse_args()
     args_string: list[str] = args.args
     version_args = [resolve_arg(arg) for arg in args_string]
-    pyproject, pre_commit = args.pyproject, args.pre_commit
+    pyproject, pre_commit, extras = args.pyproject, args.pre_commit, args.extra
     logger.setLevel(args.log_level)
 
-    process(version_args, pyproject, pre_commit)
+    process(version_args, pyproject, pre_commit, tuple(extras))
 
 
 def main() -> None:
