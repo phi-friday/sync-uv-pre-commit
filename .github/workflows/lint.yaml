@@ -27,16 +27,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install rye
-        uses: phi-friday/install-rye@v2
-        id: install-rye
+      - name: Install python
+        uses: actions/setup-python@v4
+        id: install-python
         with:
-          python_version: "3.12"
+          python-version: 3.12
+
+      - name: Install uv
+        uses: yezz123/setup-uv@v4
+        id: install-uv
 
       - name: Install dependencies
         run: |
-          rye sync
+          uv sync
 
       - name: Code checks
         run: |
-          rye run pre-commit run --all-files --show-diff-on-failure
+          uv run pre-commit run --all-files --show-diff-on-failure
