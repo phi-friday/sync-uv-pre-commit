@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 import logging
 import re
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -15,6 +14,7 @@ from typing import TYPE_CHECKING, Any, NotRequired, Required, TypedDict
 from pre_commit.clientlib import InvalidConfigError, load_config
 
 from sync_uv_pre_commit.log import ColorFormatter
+from sync_uv_pre_commit.toml import combine_dev_dependencies
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -61,16 +61,25 @@ def resolve_pyproject(
 ) -> Path:
     origin_pyproject, temp_directory = Path(pyproject), Path(temp_directory)
     new_pyproject = temp_directory / "pyproject.toml"
-    shutil.copy(origin_pyproject, new_pyproject)
+
+    key, new_pyproject = combine_dev_dependencies(origin_pyproject, new_pyproject)
 
     uv_process = subprocess.run(  # noqa: S603
-        ["uv", "lock"],  # noqa: S607
+        [  # noqa: S607
+            "uv",
+            "pip",
+            "compile",
+            new_pyproject.name,
+            "-o",
+            "requirements.txt",
+            "--extra",
+            key,
+        ],
         cwd=temp_directory,
         check=False,
         capture_output=True,
         text=True,
     )
-    shutil.rmtree(temp_directory / ".venv")
     try:
         uv_process.check_returncode()
     except subprocess.CalledProcessError as exc:
@@ -81,7 +90,7 @@ def resolve_pyproject(
             sys.exit(ExitCode.PARSING)
         sys.exit(ExitCode.UNKNOWN)
 
-    return temp_directory / "requirements-dev.lock"
+    return temp_directory / "requirements.txt"
 
 
 @lru_cache
@@ -216,5 +225,5 @@ def main() -> None:
     except SystemExit:
         raise
     except BaseException as exc:  # noqa: BLE001
-        logger.critical("Unexpected error:: %s, %s", type(exc), exc)
+        logger.critical("Unexpected error:: %s, %s", type(exc), exc, stack_info=True)
         sys.exit(ExitCode.UNKNOWN)
