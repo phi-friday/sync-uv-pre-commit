@@ -1,6 +1,11 @@
 # sync-rye-pre-commit
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+> [!CAUTION]
+> Migrate from `rye` to `uv`.
+> 
+> see more: https://github.com/astral-sh/rye/discussions/1342
+
 ## how to use
 ```yaml
 repos:
