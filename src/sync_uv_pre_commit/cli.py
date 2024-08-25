@@ -72,6 +72,7 @@ def resolve_pyproject(
     extras = (key, *extras)
     extras = tuple(extra for extra in extras if extra in valid_extras)
     command = [*command, *chain.from_iterable(("--extra", extra) for extra in extras)]
+    logger.info("Running command:\n    %s", " ".join(command))
 
     uv_process = subprocess.run(  # noqa: S603
         command, cwd=temp_directory, check=False, capture_output=True, text=True
