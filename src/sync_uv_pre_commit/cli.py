@@ -10,9 +10,10 @@ from enum import IntEnum
 from functools import lru_cache
 from itertools import chain
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, NotRequired, Required, TypedDict
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from pre_commit.clientlib import InvalidConfigError, load_config
+from typing_extensions import NotRequired, Required
 
 from sync_uv_pre_commit.log import ColorFormatter
 from sync_uv_pre_commit.toml import combine_dev_dependencies
@@ -174,7 +175,7 @@ def process(
             version = find_version_in_pyproject(
                 arg["name"], pyproject, temp_directory, extras
             )
-            version = f"{arg.get("prefix", "")}{version}{arg.get("suffix", "")}"
+            version = f"{arg.get('prefix', '')}{version}{arg.get('suffix', '')}"
 
             if hooks[arg["hook_id"]] == version:
                 logger.info(
