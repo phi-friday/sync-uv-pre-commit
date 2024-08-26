@@ -5,7 +5,7 @@ description = "Sync uv and pre commit"
 authors = [{ name = "phi", email = "phi.friday@gmail.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">= 3.9"
+requires-python = ">= 3.8"
 classifiers = [
     "Development Status :: 4 - Beta",
     "Programming Language :: Python :: 3",
@@ -14,7 +14,7 @@ classifiers = [
 ]
 scripts = { sync_uv_pre_commit = "sync_uv_pre_commit.cli:main" }
 dependencies = [
-    "pre-commit>=3.8.0",
+    "pre-commit>=3.5.0",
     "toml>=0.10.2",
     "typing-extensions>=4.12.2",
 ]
