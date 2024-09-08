@@ -25,42 +25,42 @@ repos:
 ## success output
 ```bash
 ❯ uv run pre-commit run --all-files --show-diff-on-failure --verbose
-Sync uv and pre commit..................................................Passed
-- hook id: sync-uv-pre-commit
-- duration: 0.53s
 
+Sync uv and pre commit...................................................Passed
+- hook id: sync-uv-pre-commit
+- duration: 0.08s
+
+[INFO] - uv version: 0.4.7
 [INFO] - Processing args:
 [INFO] -  - `{'name': 'ruff', 'hook_id': 'ruff', 'prefix': 'v', 'suffix': ''}`
 [INFO] -  - `{'name': 'ruff', 'hook_id': 'ruff-format', 'prefix': 'v', 'suffix': ''}`
-[INFO] -  - `{'name': 'mypy', 'hook_id': 'mypy', 'prefix': 'v', 'suffix': ''}`
 [INFO] - Processing pyproject: `pyproject.toml`
 [INFO] - Processing pre_commit: `.pre-commit-config.yaml`
 [INFO] - Running command:
-    uv pip compile pyproject.toml -o requirements.txt --extra dev_dependencies
-[INFO] - Expected ruff to be v0.5.7, and found v0.5.7
-[INFO] - Expected ruff-format to be v0.5.7, and found v0.5.7
-[INFO] - Expected mypy to be v1.11.1, and found v1.11.1
-[INFO] - Results:: 3 success, 0 errors
+    uv export --no-hashes --output-file=/var/folders/_4/h6jc_2cs6kq7l4k8_yj7171w0000gn/T/tmprh7hmc9l/requirements.txt
+[INFO] - Expected ruff to be v0.6.4, and found v0.6.4
+[INFO] - Expected ruff-format to be v0.6.4, and found v0.6.4
+[INFO] - Results:: 2 success, 0 errors
 ```
 
 ## error output
 ```bash
 ❯ uv run pre-commit run --all-files --show-diff-on-failure --verbose
-Sync uv and pre commit..................................................Failed
-- hook id: sync-uv-pre-commit
-- duration: 0.13s
-- exit code: 1
 
+Sync uv and pre commit...................................................Failed
+- hook id: sync-uv-pre-commit
+- duration: 0.08s
+- exit code: 2
+
+[INFO] - uv version: 0.4.7
 [INFO] - Processing args:
 [INFO] -  - `{'name': 'ruff', 'hook_id': 'ruff', 'prefix': 'v', 'suffix': ''}`
 [INFO] -  - `{'name': 'ruff', 'hook_id': 'ruff-format', 'prefix': 'v', 'suffix': ''}`
-[INFO] -  - `{'name': 'mypy', 'hook_id': 'mypy', 'prefix': 'v', 'suffix': ''}`
 [INFO] - Processing pyproject: `pyproject.toml`
 [INFO] - Processing pre_commit: `.pre-commit-config.yaml`
 [INFO] - Running command:
-    uv pip compile pyproject.toml -o requirements.txt --extra dev_dependencies
-[INFO] - Expected mypy to be v1.11.1, and found v1.11.1
-[ERROR] - Results:: 1 success, 2 errors
-[ERROR] - Expected ruff to be v0.5.7, but found v0.5.6
-[ERROR] - Expected ruff-format to be v0.5.7, but found v0.5.6
+    uv export --no-hashes --output-file=/var/folders/_4/h6jc_2cs6kq7l4k8_yj7171w0000gn/T/tmpk6vgib_d/requirements.txt
+[ERROR] - Results:: 0 success, 2 errors
+[ERROR] - Expected ruff to be v0.6.4, but found v0.6.3
+[ERROR] - Expected ruff-format to be v0.6.4, but found v0.6.3
 ```
