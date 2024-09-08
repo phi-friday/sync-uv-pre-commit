@@ -2,7 +2,7 @@
   name: Sync uv and pre commit
   description: Sync uv and pre commit
   language: python
-  language_version: python312
+  language_version: python3
   entry: "sync_uv_pre_commit"
   minimum_pre_commit_version: "3.5.0"
   require_serial: true
