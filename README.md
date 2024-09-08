@@ -11,7 +11,7 @@ repos:
           - "-a ruff:ruff-format:v:"
           - "-e some_extra"
     repo: https://github.com/phi-friday/sync-uv-pre-commit
-    rev: v0.2.1
+    rev: v0.3.0
 ```
 
 ### args
@@ -20,6 +20,7 @@ repos:
 - `-P` or `--pre-commit`: `.pre-commit-config.yaml` path (defaults: `.pre-commit-config.yaml`)
 - `-l` or `--log-level`: log level (defaults: `INFO`)
 - `-e` or `--extra`: optional dependencies (defaults: `[]`)
+- `--no-dev`: omit uv dev dependencies
 
 ## success output
 ```bash
