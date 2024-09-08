@@ -207,6 +207,8 @@ def process(
 
 
 def _main() -> None:
+    from importlib.metadata import version
+
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--args", action="append", default=[])
     parser.add_argument("-p", "--pyproject", type=str, default="pyproject.toml")
@@ -222,6 +224,10 @@ def _main() -> None:
     version_args = [resolve_arg(arg) for arg in args_string]
     pyproject, pre_commit, extras = args.pyproject, args.pre_commit, args.extra
     logger.setLevel(args.log_level)
+
+    pre_commit_version = version("pre-commit")
+    logger.debug("python version: %s", sys.version)
+    logger.debug("pre-commit version: %s", pre_commit_version)
 
     process(version_args, pyproject, pre_commit, tuple(extras))
 
