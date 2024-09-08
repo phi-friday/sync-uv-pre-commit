@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import logging
 import re
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,7 +17,7 @@ from pre_commit.clientlib import InvalidConfigError, load_config
 from typing_extensions import NotRequired, Required
 
 from sync_uv_pre_commit.log import ColorFormatter
-from sync_uv_pre_commit.toml import combine_dev_dependencies
+from sync_uv_pre_commit.toml import find_valid_extras
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -65,12 +66,12 @@ def resolve_pyproject(
 ) -> Path:
     origin_pyproject, temp_directory = Path(pyproject), Path(temp_directory)
     new_pyproject = temp_directory / "pyproject.toml"
+    requirements = temp_directory / "requirements.txt"
 
-    key, new_pyproject, valid_extras = combine_dev_dependencies(
-        origin_pyproject, new_pyproject
-    )
-    command = ["uv", "pip", "compile", new_pyproject.name, "-o", "requirements.txt"]
-    extras = (key, *extras)
+    shutil.copy(origin_pyproject, new_pyproject)
+    valid_extras = find_valid_extras(new_pyproject)
+
+    command = ["uv", "export", "--no-hashes", f"--output-file={requirements!s}"]
     extras = tuple(extra for extra in extras if extra in valid_extras)
     command = [*command, *chain.from_iterable(("--extra", extra) for extra in extras)]
     logger.info("Running command:\n    %s", " ".join(command))
