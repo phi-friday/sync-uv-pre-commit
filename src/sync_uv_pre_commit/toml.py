@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 __all__ = []
 
 
+@lru_cache
 def find_valid_extras(pyproject: str | PathLike[str] | dict[str, Any]) -> set[str]:
     if not isinstance(pyproject, dict):
         pyproject = read_pyproject(pyproject)

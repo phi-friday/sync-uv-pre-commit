@@ -62,9 +62,11 @@ def create_version_pattern(name: str) -> re.Pattern[str]:
 
 @lru_cache
 def resolve_pyproject(
+    *,
     pyproject: str | PathLike[str],
     temp_directory: str | PathLike[str],
     extras: tuple[str, ...],
+    no_dev: bool,
 ) -> Path:
     origin_pyproject, temp_directory = Path(pyproject), Path(temp_directory)
     new_pyproject = temp_directory / "pyproject.toml"
@@ -75,7 +77,11 @@ def resolve_pyproject(
 
     command = ["uv", "export", "--no-hashes", f"--output-file={requirements!s}"]
     extras = tuple(extra for extra in extras if extra in valid_extras)
-    command = [*command, *chain.from_iterable(("--extra", extra) for extra in extras)]
+    if extras:
+        command.extend(chain.from_iterable(("--extra", extra) for extra in extras))
+    if no_dev:
+        command.append("--no-dev")
+
     logger.info("Running command:\n    %s", " ".join(command))
 
     uv_process = subprocess.run(  # noqa: S603
@@ -114,12 +120,16 @@ def find_version(name: str, lock_file: str | PathLike[str]) -> str:
 
 
 def find_version_in_pyproject(
+    *,
     name: str,
     pyproject: str | PathLike[str],
     temp_directory: str | PathLike[str],
     extras: tuple[str, ...],
+    no_dev: bool,
 ) -> str:
-    lock_file = resolve_pyproject(pyproject, temp_directory, extras)
+    lock_file = resolve_pyproject(
+        pyproject=pyproject, temp_directory=temp_directory, extras=extras, no_dev=no_dev
+    )
     return find_version(name, lock_file)
 
 
@@ -159,10 +169,12 @@ def resolve_arg(arg_string: str) -> Args:
 
 
 def process(
+    *,
     args: list[Args],
     pyproject: str | PathLike[str],
     pre_commit: str | PathLike[str],
     extras: tuple[str, ...],
+    no_dev: bool,
 ) -> None:
     if args:
         logger.info("Processing args:")
@@ -176,7 +188,11 @@ def process(
     with tempfile.TemporaryDirectory() as temp_directory:
         for index, arg in enumerate(args):
             version = find_version_in_pyproject(
-                arg["name"], pyproject, temp_directory, extras
+                name=arg["name"],
+                pyproject=pyproject,
+                temp_directory=temp_directory,
+                extras=extras,
+                no_dev=no_dev,
             )
             version = f"{arg.get('prefix', '')}{version}{arg.get('suffix', '')}"
 
@@ -244,19 +260,31 @@ def _main() -> None:
     )
     parser.add_argument("-l", "--log-level", type=str, default="INFO")
     parser.add_argument("-e", "--extra", action="append", default=[])
+    parser.add_argument("--no-dev", action="store_true", default=False)
     parser.add_argument("dummy", nargs="*")
 
     args = parser.parse_args()
     args_string: list[str] = args.args
     version_args = [resolve_arg(arg) for arg in args_string]
-    pyproject, pre_commit, extras = args.pyproject, args.pre_commit, args.extra
+    pyproject, pre_commit, extras, no_dev = (
+        args.pyproject,
+        args.pre_commit,
+        args.extra,
+        args.no_dev,
+    )
     logger.setLevel(args.log_level)
 
     pre_commit_version = version("pre-commit")
     logger.debug("python version: %s", sys.version)
     logger.debug("pre-commit version: %s", pre_commit_version)
 
-    process(version_args, pyproject, pre_commit, tuple(extras))
+    process(
+        args=version_args,
+        pyproject=pyproject,
+        pre_commit=pre_commit,
+        extras=tuple(extras),
+        no_dev=no_dev,
+    )
 
 
 def main() -> None:
