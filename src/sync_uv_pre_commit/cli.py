@@ -89,7 +89,7 @@ def resolve_pyproject(
             sys.exit(ExitCode.PARSING)
         sys.exit(ExitCode.UNKNOWN)
 
-    return temp_directory / "requirements.txt"
+    return requirements
 
 
 @lru_cache
