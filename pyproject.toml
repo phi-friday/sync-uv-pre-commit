@@ -22,7 +22,7 @@ dependencies = [
 [tool.uv]
 managed = true
 dev-dependencies = [
-    "ruff==0.5.7",
+    "ruff==0.6.4",
     "poethepoet>=0.27.0",
 ]
 
