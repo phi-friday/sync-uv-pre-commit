@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 __all__ = []
 
 _RE_VERSION = "{name}==(?P<version>.+)"
+_UV_VERSION_MINIMA = "0.4.7"  # uv export --output-file
 logger = logging.getLogger("sync_uv_pre_commit")
 logger.setLevel(logging.INFO)
 handler = logging.StreamHandler()
@@ -51,6 +52,7 @@ class ExitCode(IntEnum):
     MISSING = 127
     PARSING = 1
     MISMATCH = 2
+    VERSION = 3
 
 
 def create_version_pattern(name: str) -> re.Pattern[str]:
@@ -207,8 +209,32 @@ def process(
         sys.exit(ExitCode.MISMATCH)
 
 
+def check_uv_version() -> None:
+    command = ["uv", "--version"]
+    process = subprocess.run(command, check=False, capture_output=True, text=True)  # noqa: S603
+
+    try:
+        process.check_returncode()
+    except subprocess.CalledProcessError as exc:
+        logger.error("uv version failed: %s", exc.stderr)  # noqa: TRY400
+        if exc.returncode == ExitCode.MISSING.value:
+            sys.exit(ExitCode.MISSING)
+        if exc.returncode == ExitCode.PARSING.value:
+            sys.exit(ExitCode.PARSING)
+        sys.exit(ExitCode.UNKNOWN)
+
+    version = process.stdout.strip().split()[1]
+    logger.info("uv version: %s", version)
+
+    if version < _UV_VERSION_MINIMA:
+        logger.critical("uv version %s is not supported", version)
+        sys.exit(ExitCode.VERSION)
+
+
 def _main() -> None:
     from importlib.metadata import version
+
+    check_uv_version()
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-a", "--args", action="append", default=[])
