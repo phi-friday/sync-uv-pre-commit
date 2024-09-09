@@ -11,7 +11,7 @@ repos:
           - "-a ruff:ruff-format:v:"
           - "-e some_extra"
     repo: https://github.com/phi-friday/sync-uv-pre-commit
-    rev: v0.3.0
+    rev: v0.4.0
 ```
 
 ### args
@@ -38,8 +38,8 @@ Sync uv and pre commit...................................................Passed
 [INFO] - Processing pre_commit: `.pre-commit-config.yaml`
 [INFO] - Running command:
     uv export --no-hashes --output-file=/var/folders/_4/h6jc_2cs6kq7l4k8_yj7171w0000gn/T/tmprh7hmc9l/requirements.txt
-[INFO] - Expected ruff to be v0.6.4, and found v0.6.4
-[INFO] - Expected ruff-format to be v0.6.4, and found v0.6.4
+[INFO] - Expected ruff to be ==0.6.4, and found v0.6.4
+[INFO] - Expected ruff-format to be ==0.6.4, and found v0.6.4
 [INFO] - Results:: 2 success, 0 errors
 ```
 
@@ -61,6 +61,6 @@ Sync uv and pre commit...................................................Failed
 [INFO] - Running command:
     uv export --no-hashes --output-file=/var/folders/_4/h6jc_2cs6kq7l4k8_yj7171w0000gn/T/tmpk6vgib_d/requirements.txt
 [ERROR] - Results:: 0 success, 2 errors
-[ERROR] - Expected ruff to be v0.6.4, but found v0.6.3
-[ERROR] - Expected ruff-format to be v0.6.4, but found v0.6.3
+[ERROR] - Expected ruff to be ==0.6.4, but found v0.6.3
+[ERROR] - Expected ruff-format to be ==0.6.4, but found v0.6.3
 ```
