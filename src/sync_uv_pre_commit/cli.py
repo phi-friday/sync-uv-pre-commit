@@ -2,12 +2,10 @@ from __future__ import annotations
 
 import argparse
 import logging
-import re
 import shutil
 import subprocess
 import sys
 import tempfile
-from enum import IntEnum
 from functools import lru_cache
 from itertools import chain
 from pathlib import Path
@@ -16,23 +14,19 @@ from typing import TYPE_CHECKING, Any, TypedDict
 from pre_commit.clientlib import InvalidConfigError, load_config
 from typing_extensions import NotRequired, Required
 
-from sync_uv_pre_commit.log import ColorFormatter
+from sync_uv_pre_commit.log import ExitCode, logger
+from sync_uv_pre_commit.package import find_specifier
 from sync_uv_pre_commit.toml import find_valid_extras
 
 if TYPE_CHECKING:
     from collections.abc import Generator
     from os import PathLike
 
+    from packaging.specifiers import SpecifierSet
+
 __all__ = []
 
-_RE_VERSION = "{name}==(?P<version>.+)"
 _UV_VERSION_MINIMA = "0.4.7"  # uv export --output-file
-logger = logging.getLogger("sync_uv_pre_commit")
-logger.setLevel(logging.INFO)
-handler = logging.StreamHandler()
-formatter = ColorFormatter(fmt="[{levelname:s}] - {message:s}", style="{")
-handler.setFormatter(formatter)
-logger.addHandler(handler)
 
 
 class Hook(TypedDict, total=True):
@@ -45,19 +39,6 @@ class Args(TypedDict):
     hook_id: Required[str]
     prefix: NotRequired[str]
     suffix: NotRequired[str]
-
-
-class ExitCode(IntEnum):
-    UNKNOWN = 999
-    MISSING = 127
-    PARSING = 1
-    MISMATCH = 2
-    VERSION = 3
-
-
-def create_version_pattern(name: str) -> re.Pattern[str]:
-    text = rf"{_RE_VERSION.format(name=name)}"
-    return re.compile(text)
 
 
 @lru_cache
@@ -90,7 +71,7 @@ def resolve_pyproject(
     try:
         uv_process.check_returncode()
     except subprocess.CalledProcessError as exc:
-        logger.error("uv lock failed: %s", exc.stderr)  # noqa: TRY400
+        logger.error("uv lock failed: %s", exc.stderr)
         if exc.returncode == ExitCode.MISSING.value:
             sys.exit(ExitCode.MISSING)
         if exc.returncode == ExitCode.PARSING.value:
@@ -98,39 +79,6 @@ def resolve_pyproject(
         sys.exit(ExitCode.UNKNOWN)
 
     return requirements
-
-
-@lru_cache
-def load_lockfile(lock_file: str | PathLike[str]) -> str:
-    lock_file = Path(lock_file)
-    with lock_file.open() as f:
-        return f.read()
-
-
-def find_version(name: str, lock_file: str | PathLike[str]) -> str:
-    pattern = create_version_pattern(name)
-    lock = load_lockfile(lock_file)
-
-    match = pattern.search(lock)
-    if match is None:
-        logger.error("Package %s not found in lock file", name)
-        sys.exit(ExitCode.PARSING)
-
-    return match.group("version")
-
-
-def find_version_in_pyproject(
-    *,
-    name: str,
-    pyproject: str | PathLike[str],
-    temp_directory: str | PathLike[str],
-    extras: tuple[str, ...],
-    no_dev: bool,
-) -> str:
-    lock_file = resolve_pyproject(
-        pyproject=pyproject, temp_directory=temp_directory, extras=extras, no_dev=no_dev
-    )
-    return find_version(name, lock_file)
 
 
 @lru_cache
@@ -184,23 +132,29 @@ def process(
     logger.info("Processing pre_commit: `%s`", pre_commit)
 
     hooks = resolve_pre_commit(pre_commit)
-    errors: list[tuple[str, str, str, str] | None] = [None] * len(args)
+    errors: list[tuple[str, str, SpecifierSet, str] | None] = [None] * len(args)
     with tempfile.TemporaryDirectory() as temp_directory:
+        lock_file = resolve_pyproject(
+            pyproject=pyproject,
+            temp_directory=temp_directory,
+            extras=extras,
+            no_dev=no_dev,
+        )
         for index, arg in enumerate(args):
-            version = find_version_in_pyproject(
-                name=arg["name"],
-                pyproject=pyproject,
-                temp_directory=temp_directory,
-                extras=extras,
-                no_dev=no_dev,
-            )
-            version = f"{arg.get('prefix', '')}{version}{arg.get('suffix', '')}"
+            specifier = find_specifier(name=arg["name"], lock_file=lock_file)
+            hook_rev = hooks[arg["hook_id"]]
 
-            if hooks[arg["hook_id"]] == version:
+            prefix, suffix = arg.get("prefix", ""), arg.get("suffix", "")
+            if hook_rev.startswith(prefix):  # FIXME: python3.9+
+                hook_rev = hook_rev[len(prefix) :]
+            if hook_rev.endswith(suffix):
+                hook_rev = hook_rev[: -len(suffix)]
+
+            if specifier.contains(hook_rev):
                 logger.info(
                     "Expected %s to be %s, and found %s",
                     arg["hook_id"],
-                    version,
+                    specifier,
                     hooks[arg["hook_id"]],
                 )
                 continue
@@ -208,7 +162,7 @@ def process(
             errors[index] = (
                 "Expected %s to be %s, but found %s",
                 arg["hook_id"],
-                version,
+                specifier,
                 hooks[arg["hook_id"]],
             )
 
@@ -232,7 +186,7 @@ def check_uv_version() -> None:
     try:
         process.check_returncode()
     except subprocess.CalledProcessError as exc:
-        logger.error("uv version failed: %s", exc.stderr)  # noqa: TRY400
+        logger.error("uv version failed: %s", exc.stderr)
         if exc.returncode == ExitCode.MISSING.value:
             sys.exit(ExitCode.MISSING)
         if exc.returncode == ExitCode.PARSING.value:
