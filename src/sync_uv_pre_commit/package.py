@@ -24,7 +24,7 @@ def parse_lockfile(lock_file: str | PathLike[str]) -> dict[str, Requirement]:
         return {
             (req := Requirement(line.strip())).name: req
             for line in file.readlines()
-            if not line.startswith("#")
+            if not line.startswith(("#", "-e"))
         }
 
 
