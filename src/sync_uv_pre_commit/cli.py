@@ -145,9 +145,9 @@ def process(
             hook_rev = hooks[arg["hook_id"]]
 
             prefix, suffix = arg.get("prefix", ""), arg.get("suffix", "")
-            if hook_rev.startswith(prefix):  # FIXME: python3.9+
+            if prefix and hook_rev.startswith(prefix):  # FIXME: python3.9+
                 hook_rev = hook_rev[len(prefix) :]
-            if hook_rev.endswith(suffix):
+            if suffix and hook_rev.endswith(suffix):
                 hook_rev = hook_rev[: -len(suffix)]
 
             if specifier.contains(hook_rev):
