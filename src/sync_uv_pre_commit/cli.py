@@ -244,6 +244,7 @@ def check_uv_version() -> None:
 
     if version < _UV_VERSION_MINIMA:
         logger.critical("uv version %s is not supported", version)
+        logger.critical("Please upgrade to version %s or higher", _UV_VERSION_MINIMA)
         sys.exit(ExitCode.VERSION)
 
 
