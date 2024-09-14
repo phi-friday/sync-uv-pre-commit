@@ -11,6 +11,7 @@ from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypedDict
 
+from packaging.specifiers import Specifier, SpecifierSet
 from pre_commit.clientlib import InvalidConfigError, load_config
 from typing_extensions import NotRequired, Required
 
@@ -22,11 +23,10 @@ if TYPE_CHECKING:
     from collections.abc import Generator
     from os import PathLike
 
-    from packaging.specifiers import SpecifierSet
 
 __all__ = []
 
-_UV_VERSION_MINIMA = "0.4.7"  # uv export --output-file
+_UV_VERSION_MINIMA = Specifier(">=0.4.7")
 
 
 class Hook(TypedDict, total=True):
@@ -199,9 +199,9 @@ def check_uv_version() -> None:
     version = process.stdout.strip().split()[1]
     logger.info("uv version: %s", version)
 
-    if version < _UV_VERSION_MINIMA:
+    if not _UV_VERSION_MINIMA.contains(version):
         logger.critical("uv version %s is not supported", version)
-        logger.critical("Please upgrade to version %s or higher", _UV_VERSION_MINIMA)
+        logger.critical("uv version must be %s", _UV_VERSION_MINIMA)
         sys.exit(ExitCode.VERSION)
 
 
