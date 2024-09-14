@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import shutil
 import subprocess
 import sys
@@ -80,7 +81,7 @@ def resolve_pyproject(
         check=False,
         capture_output=True,
         text=True,
-        env={"UV_PYTHON": sys.executable},
+        env={**os.environ, "UV_PYTHON": sys.executable},
     )
     try:
         uv_process.check_returncode()
