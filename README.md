@@ -11,7 +11,7 @@ repos:
           - "-a ruff:ruff-format:v:"
           - "-e some_extra"
     repo: https://github.com/phi-friday/sync-uv-pre-commit
-    rev: v0.4.1
+    rev: v0.4.2
 ```
 
 ### args
