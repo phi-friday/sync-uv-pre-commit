@@ -229,7 +229,7 @@ def _main() -> None:
         args.no_dev,
     )
 
-    log_level = str(args.log_level)
+    log_level = str(args.log_level).strip()
     if log_level.isdigit():
         log_level = int(log_level)
     logger.setLevel(log_level)
