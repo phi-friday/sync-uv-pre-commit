@@ -54,6 +54,7 @@ def resolve_pyproject(
     requirements = temp_directory / "requirements.txt"
 
     shutil.copy(origin_pyproject, new_pyproject)
+    logger.debug("before validate extras: %s", extras)
     valid_extras = find_valid_extras(new_pyproject)
 
     command = ["uv", "export", "--no-hashes", f"--output-file={requirements!s}"]
