@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import logging
-import os
 import shutil
 import subprocess
 import sys
@@ -18,7 +17,7 @@ from typing_extensions import NotRequired, Required
 
 from sync_uv_pre_commit.log import ExitCode, logger
 from sync_uv_pre_commit.package import find_specifier
-from sync_uv_pre_commit.toml import find_valid_extras
+from sync_uv_pre_commit.toml import combine_dev_dependencies, find_valid_extras
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -54,34 +53,40 @@ def resolve_pyproject(
     new_pyproject = temp_directory / "pyproject.toml"
     requirements = temp_directory / "requirements.txt"
 
-    shutil.copy(origin_pyproject, new_pyproject)
+    dev_key: str | None
+    if no_dev:
+        shutil.copy(origin_pyproject, new_pyproject)
+        dev_key = None
+    else:
+        dev_key, new_pyproject = combine_dev_dependencies(
+            origin_pyproject, new_pyproject
+        )
+
     logger.debug("before validate extras: %s", extras)
     valid_extras = find_valid_extras(new_pyproject)
     logger.debug("valid extras: %s", valid_extras)
 
     command = [
         "uv",
-        "export",
-        "--no-hashes",
-        "--no-emit-project",
-        f"--output-file={requirements!s}",
+        "pip",
+        "compile",
+        str(new_pyproject),
+        "-o",
+        str(requirements),
+        "--no-annotate",
+        "--no-header",
     ]
     extras = tuple(ext for extra in extras if (ext := extra.strip()) in valid_extras)
     logger.debug("extras: %s", extras)
     if extras:
         command.extend(chain.from_iterable(("--extra", extra) for extra in extras))
-    if no_dev:
-        command.append("--no-dev")
+    if dev_key:
+        command.extend(["--extra", dev_key])
 
     logger.info("Running command:\n    %s", " ".join(command))
 
     uv_process = subprocess.run(  # noqa: S603
-        command,
-        cwd=temp_directory,
-        check=False,
-        capture_output=True,
-        text=True,
-        env={**os.environ, "UV_PYTHON": sys.executable},
+        command, cwd=temp_directory, check=False, capture_output=True, text=True
     )
     try:
         uv_process.check_returncode()
