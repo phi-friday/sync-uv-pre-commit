@@ -58,7 +58,13 @@ def resolve_pyproject(
     valid_extras = find_valid_extras(new_pyproject)
     logger.debug("valid extras: %s", valid_extras)
 
-    command = ["uv", "export", "--no-hashes", f"--output-file={requirements!s}"]
+    command = [
+        "uv",
+        "export",
+        "--no-hashes",
+        "--no-emit-project",
+        f"--output-file={requirements!s}",
+    ]
     extras = tuple(ext for extra in extras if (ext := extra.strip()) in valid_extras)
     logger.debug("extras: %s", extras)
     if extras:
