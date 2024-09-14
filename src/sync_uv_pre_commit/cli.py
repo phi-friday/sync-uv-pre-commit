@@ -58,6 +58,7 @@ def resolve_pyproject(
 
     command = ["uv", "export", "--no-hashes", f"--output-file={requirements!s}"]
     extras = tuple(extra for extra in extras if extra in valid_extras)
+    logger.debug("extras: %s", extras)
     if extras:
         command.extend(chain.from_iterable(("--extra", extra) for extra in extras))
     if no_dev:
@@ -227,7 +228,11 @@ def _main() -> None:
         args.extra,
         args.no_dev,
     )
-    logger.setLevel(args.log_level)
+
+    log_level = str(args.log_level)
+    if log_level.isdigit():
+        log_level = int(log_level)
+    logger.setLevel(log_level)
 
     pre_commit_version = version("pre-commit")
     logger.debug("python version: %s", sys.version)
