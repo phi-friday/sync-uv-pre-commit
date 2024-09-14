@@ -75,7 +75,12 @@ def resolve_pyproject(
     logger.info("Running command:\n    %s", " ".join(command))
 
     uv_process = subprocess.run(  # noqa: S603
-        command, cwd=temp_directory, check=False, capture_output=True, text=True
+        command,
+        cwd=temp_directory,
+        check=False,
+        capture_output=True,
+        text=True,
+        env={"UV_PYTHON": sys.executable},
     )
     try:
         uv_process.check_returncode()
