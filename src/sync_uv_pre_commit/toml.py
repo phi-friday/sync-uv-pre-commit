@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -12,18 +11,14 @@ if TYPE_CHECKING:
 __all__ = []
 
 
-@lru_cache
-def find_valid_extras(pyproject: str | PathLike[str]) -> set[str]:
-    pyproject_dict = read_pyproject(pyproject)
-
-    project: dict[str, Any] = pyproject_dict["project"]
-    optional_dependencies: dict[str, list[str]] = project.setdefault(
+def find_valid_extras(pyproject: dict[str, Any]) -> set[str]:
+    project: dict[str, Any] = pyproject["project"]
+    optional_dependencies: dict[str, list[str]] = project.get(
         "optional-dependencies", {}
     )
     return set(optional_dependencies.keys())
 
 
-@lru_cache
 def read_pyproject(pyproject: str | PathLike[str]) -> dict[str, Any]:
     pyproject = Path(pyproject)
     with pyproject.open() as f:
@@ -31,13 +26,12 @@ def read_pyproject(pyproject: str | PathLike[str]) -> dict[str, Any]:
 
 
 def combine_dev_dependencies(
-    pyproject: str | PathLike[str], destination: str | PathLike[str]
+    pyproject: dict[str, Any], destination: str | PathLike[str]
 ) -> tuple[str, Path]:
-    pyproject = Path(pyproject)
     destination = Path(destination)
+    pyproject = pyproject.copy()
 
-    pyproject_obj = read_pyproject(pyproject)
-    key, new_pyproject = dev_dependencies_to_dependencies(pyproject_obj)
+    key, new_pyproject = dev_dependencies_to_dependencies(pyproject)
     write_pyproject(new_pyproject, destination)
 
     return key, destination
@@ -53,12 +47,11 @@ def write_pyproject(
 
 
 def dev_dependencies_to_dependencies(
-    pyproject: str | PathLike[str] | dict[str, Any],
+    pyproject: dict[str, Any],
 ) -> tuple[str, dict[str, Any]]:
-    if not isinstance(pyproject, dict):
-        pyproject = read_pyproject(pyproject)
-
+    pyproject = pyproject.copy()
     key = "dev_dependencies"
+
     project: dict[str, Any] = pyproject["project"]
 
     optional_dependencies: dict[str, list[str]] = project.setdefault(
@@ -72,6 +65,7 @@ def dev_dependencies_to_dependencies(
     dev_dependencies: list[str] = uv_config.setdefault("dev-dependencies", [])
 
     optional_dependencies[key] = dev_dependencies
-    pyproject["project"]["optional-dependencies"] = optional_dependencies
+    project["optional-dependencies"] = optional_dependencies
+    pyproject["project"] = project
 
     return key, pyproject

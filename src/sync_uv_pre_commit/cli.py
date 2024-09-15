@@ -6,7 +6,6 @@ import shutil
 import subprocess
 import sys
 import tempfile
-from functools import lru_cache
 from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypedDict
@@ -16,8 +15,12 @@ from pre_commit.clientlib import InvalidConfigError, load_config
 from typing_extensions import NotRequired, Required
 
 from sync_uv_pre_commit.log import ExitCode, logger
-from sync_uv_pre_commit.package import find_specifier
-from sync_uv_pre_commit.toml import combine_dev_dependencies, find_valid_extras
+from sync_uv_pre_commit.package import find_specifier, parse_lockfile
+from sync_uv_pre_commit.toml import (
+    combine_dev_dependencies,
+    find_valid_extras,
+    read_pyproject,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -41,7 +44,6 @@ class Args(TypedDict):
     suffix: NotRequired[str]
 
 
-@lru_cache
 def resolve_pyproject(
     *,
     pyproject: str | PathLike[str],
@@ -49,19 +51,21 @@ def resolve_pyproject(
     extras: tuple[str, ...],
     no_dev: bool,
 ) -> Path:
-    origin_pyproject, temp_directory = Path(pyproject), Path(temp_directory)
-    new_pyproject = temp_directory / "pyproject.toml"
-    requirements = temp_directory / "requirements.txt"
+    origin_pyproject_path, temp_directory = Path(pyproject), Path(temp_directory)
+    new_pyproject_path = temp_directory / "pyproject.toml"
+    requirements_path = temp_directory / "requirements.txt"
 
     dev_key: str | None
     if no_dev:
-        shutil.copy(origin_pyproject, new_pyproject)
+        shutil.copy(origin_pyproject_path, new_pyproject_path)
         dev_key = None
     else:
-        dev_key, new_pyproject = combine_dev_dependencies(
-            origin_pyproject, new_pyproject
+        origin_pyproject = read_pyproject(origin_pyproject_path)
+        dev_key, new_pyproject_path = combine_dev_dependencies(
+            origin_pyproject, new_pyproject_path
         )
 
+    new_pyproject = read_pyproject(new_pyproject_path)
     logger.debug("before validate extras: %s", extras)
     valid_extras = find_valid_extras(new_pyproject)
     logger.debug("valid extras: %s", valid_extras)
@@ -70,9 +74,9 @@ def resolve_pyproject(
         "uv",
         "pip",
         "compile",
-        str(new_pyproject),
+        str(new_pyproject_path),
         "-o",
-        str(requirements),
+        str(requirements_path),
         "--no-annotate",
         "--no-header",
     ]
@@ -98,10 +102,9 @@ def resolve_pyproject(
             sys.exit(ExitCode.PARSING)
         sys.exit(ExitCode.UNKNOWN)
 
-    return requirements
+    return requirements_path
 
 
-@lru_cache
 def resolve_pre_commit(pre_commit: str | PathLike[str]) -> dict[str, str]:
     try:
         config = load_config(pre_commit)
@@ -160,8 +163,10 @@ def process(
             extras=extras,
             no_dev=no_dev,
         )
+        lock = parse_lockfile(lock_file)
+
         for index, arg in enumerate(args):
-            specifier = find_specifier(name=arg["name"], lock_file=lock_file)
+            specifier = find_specifier(name=arg["name"], lock=lock)
             hook_rev = hooks[arg["hook_id"]]
 
             prefix, suffix = arg.get("prefix", ""), arg.get("suffix", "")

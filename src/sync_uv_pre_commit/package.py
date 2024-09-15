@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import sys
-from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -17,7 +16,6 @@ if TYPE_CHECKING:
 __all__ = []
 
 
-@lru_cache
 def parse_lockfile(lock_file: str | PathLike[str]) -> dict[str, Requirement]:
     lock_file = Path(lock_file)
     with lock_file.open() as file:
@@ -28,8 +26,7 @@ def parse_lockfile(lock_file: str | PathLike[str]) -> dict[str, Requirement]:
         }
 
 
-def find_specifier(name: str, lock_file: str | PathLike[str]) -> SpecifierSet:
-    lock = parse_lockfile(lock_file)
+def find_specifier(name: str, lock: dict[str, Requirement]) -> SpecifierSet:
     reqirement = lock.get(name)
 
     if reqirement is None:
