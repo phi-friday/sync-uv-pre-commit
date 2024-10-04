@@ -23,15 +23,15 @@ dependencies = [
 [tool.uv]
 managed = true
 dev-dependencies = [
-    "ruff==0.6.4",
+    "ruff==0.6.8",
     "poethepoet>=0.27.0",
 ]
 
 [tool.poe.tasks]
-lint = ["lint:check", "lint:format"]
-"lint:check" = "ruff check src --fix"
-"lint:format" = "ruff format src"
+lint = ["_lint:check", "_lint:format"]
 check = "pre-commit run --all-files --show-diff-on-failure"
+"_lint:check" = "ruff check src --fix"
+"_lint:format" = "ruff format src"
 
 [build-system]
 requires = ["hatchling"]
