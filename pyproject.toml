@@ -19,13 +19,15 @@ dependencies = [
     "toml>=0.10.2",
     "typing-extensions>=4.12.2",
 ]
+[dependency-groups]
+dev = [
+    "ruff==0.7.1",
+    "poethepoet>=0.27.0",
+]
 
 [tool.uv]
 managed = true
-dev-dependencies = [
-    "ruff==0.6.8",
-    "poethepoet>=0.27.0",
-]
+default-groups = ["dev"]
 
 [tool.poe.tasks]
 lint = ["_lint:check", "_lint:format"]
