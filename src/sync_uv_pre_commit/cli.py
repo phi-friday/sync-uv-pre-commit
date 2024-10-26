@@ -65,6 +65,8 @@ def resolve_pyproject(
         "--no-hashes",
         "--no-emit-project",
         "--no-emit-workspace",
+        "-o",
+        str(requirements_path),
     ]
     extras = tuple(ext for extra in extras if (ext := extra.strip()) in valid_extras)
     logger.debug("extras: %s", extras)
@@ -74,6 +76,7 @@ def resolve_pyproject(
         command.extend(chain.from_iterable(("--group", group) for group in groups))
     if no_dev:
         command.append("--no-dev")
+    command.append(str(pyproject))
 
     logger.info("Running command:\n    %s", " ".join(command))
 
