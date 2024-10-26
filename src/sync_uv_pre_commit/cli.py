@@ -16,7 +16,13 @@ from typing_extensions import NotRequired, Required
 
 from sync_uv_pre_commit.log import ExitCode, logger
 from sync_uv_pre_commit.package import find_specifier, parse_lockfile
-from sync_uv_pre_commit.toml import find_valid_extras, find_valid_groups, read_pyproject
+from sync_uv_pre_commit.toml import (
+    find_valid_extras,
+    find_valid_groups,
+    read_pyproject,
+    remove_dynamic_version,
+    write_pyproject,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -54,9 +60,14 @@ def resolve_pyproject(
 
     shutil.copy(pyproject, new_pyproject)
     pyproject_dict = read_pyproject(new_pyproject)
+    pyproject_dict = remove_dynamic_version(pyproject_dict)
+    new_pyproject.unlink()
+    write_pyproject(pyproject_dict, new_pyproject)
+
     logger.debug("before validate extras: %s", extras)
     valid_extras = find_valid_extras(pyproject_dict)
     logger.debug("valid extras: %s", valid_extras)
+    logger.debug("before validate groups: %s", groups)
     valid_groups = find_valid_groups(pyproject_dict)
     logger.debug("valid groups: %s", valid_groups)
 
