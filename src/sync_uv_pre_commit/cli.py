@@ -76,12 +76,11 @@ def resolve_pyproject(
         command.extend(chain.from_iterable(("--group", group) for group in groups))
     if no_dev:
         command.append("--no-dev")
-    command.append(str(pyproject))
 
     logger.info("Running command:\n    %s", " ".join(command))
 
     uv_process = subprocess.run(  # noqa: S603
-        command, cwd=temp_directory, check=False, capture_output=True, text=True
+        command, check=False, capture_output=True, text=True
     )
     try:
         uv_process.check_returncode()
@@ -143,6 +142,7 @@ def process(  # noqa: PLR0913
         logger.info("Processing args:")
         for arg in args:
             logger.info(" - `%s`", arg)
+    pyproject = Path(pyproject).resolve()
     logger.info("Processing pyproject: `%s`", pyproject)
     logger.info("Processing pre_commit: `%s`", pre_commit)
 
