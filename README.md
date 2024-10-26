@@ -12,7 +12,7 @@ repos:
           - "-e some_extra"
           - "-g some_group"
     repo: https://github.com/phi-friday/sync-uv-pre-commit
-    rev: v0.6.0
+    rev: v0.6.2
 ```
 
 ### args
