@@ -19,6 +19,11 @@ def find_valid_extras(pyproject: dict[str, Any]) -> set[str]:
     return set(optional_dependencies.keys())
 
 
+def find_valid_groups(pyproject: dict[str, Any]) -> set[str]:
+    dependency_groups = pyproject.get("dependency-groups", {})
+    return set(dependency_groups.keys())
+
+
 def read_pyproject(pyproject: str | PathLike[str]) -> dict[str, Any]:
     pyproject = Path(pyproject)
     with pyproject.open() as f:

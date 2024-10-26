@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import argparse
 import logging
-import shutil
 import subprocess
 import sys
 import tempfile
@@ -16,11 +15,7 @@ from typing_extensions import NotRequired, Required
 
 from sync_uv_pre_commit.log import ExitCode, logger
 from sync_uv_pre_commit.package import find_specifier, parse_lockfile
-from sync_uv_pre_commit.toml import (
-    combine_dev_dependencies,
-    find_valid_extras,
-    read_pyproject,
-)
+from sync_uv_pre_commit.toml import find_valid_extras, find_valid_groups, read_pyproject
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -49,43 +44,36 @@ def resolve_pyproject(
     pyproject: str | PathLike[str],
     temp_directory: str | PathLike[str],
     extras: tuple[str, ...],
+    groups: tuple[str, ...],
     no_dev: bool,
 ) -> Path:
-    origin_pyproject_path, temp_directory = Path(pyproject), Path(temp_directory)
-    new_pyproject_path = temp_directory / "pyproject.toml"
+    pyproject, temp_directory = Path(pyproject), Path(temp_directory)
     requirements_path = temp_directory / "requirements.txt"
 
-    dev_key: str | None
-    if no_dev:
-        shutil.copy(origin_pyproject_path, new_pyproject_path)
-        dev_key = None
-    else:
-        origin_pyproject = read_pyproject(origin_pyproject_path)
-        dev_key, new_pyproject_path = combine_dev_dependencies(
-            origin_pyproject, new_pyproject_path
-        )
-
-    new_pyproject = read_pyproject(new_pyproject_path)
+    pyproject_dict = read_pyproject(pyproject)
     logger.debug("before validate extras: %s", extras)
-    valid_extras = find_valid_extras(new_pyproject)
+    valid_extras = find_valid_extras(pyproject_dict)
     logger.debug("valid extras: %s", valid_extras)
+    valid_groups = find_valid_groups(pyproject_dict)
+    logger.debug("valid groups: %s", valid_groups)
 
     command = [
         "uv",
-        "pip",
-        "compile",
-        str(new_pyproject_path),
-        "-o",
-        str(requirements_path),
-        "--no-annotate",
+        "export",
         "--no-header",
+        "--no-editable",
+        "--no-hashes",
+        "--no-emit-project",
+        "--no-emit-workspace",
     ]
     extras = tuple(ext for extra in extras if (ext := extra.strip()) in valid_extras)
     logger.debug("extras: %s", extras)
     if extras:
         command.extend(chain.from_iterable(("--extra", extra) for extra in extras))
-    if dev_key:
-        command.extend(["--extra", dev_key])
+    if groups:
+        command.extend(chain.from_iterable(("--group", group) for group in groups))
+    if no_dev:
+        command.append("--no-dev")
 
     logger.info("Running command:\n    %s", " ".join(command))
 
@@ -139,12 +127,13 @@ def resolve_arg(arg_string: str) -> Args:
     return Args(name=args[0], hook_id=args[1], prefix=args[2], suffix=args[3])
 
 
-def process(
+def process(  # noqa: PLR0913
     *,
     args: list[Args],
     pyproject: str | PathLike[str],
     pre_commit: str | PathLike[str],
     extras: tuple[str, ...],
+    groups: tuple[str, ...],
     no_dev: bool,
 ) -> None:
     if args:
@@ -161,6 +150,7 @@ def process(
             pyproject=pyproject,
             temp_directory=temp_directory,
             extras=extras,
+            groups=groups,
             no_dev=no_dev,
         )
         lock = parse_lockfile(lock_file)
@@ -240,16 +230,18 @@ def _main() -> None:
     )
     parser.add_argument("-l", "--log-level", type=str, default="INFO")
     parser.add_argument("-e", "--extra", action="append", default=[])
+    parser.add_argument("-g", "--group", action="append", default=[])
     parser.add_argument("--no-dev", action="store_true", default=False)
     parser.add_argument("dummy", nargs="*")
 
     args = parser.parse_args()
     args_string: list[str] = args.args
     version_args = [resolve_arg(arg) for arg in args_string]
-    pyproject, pre_commit, extras, no_dev = (
+    pyproject, pre_commit, extras, groups, no_dev = (
         args.pyproject,
         args.pre_commit,
         args.extra,
+        args.group,
         args.no_dev,
     )
 
@@ -267,6 +259,7 @@ def _main() -> None:
         pyproject=pyproject,
         pre_commit=pre_commit,
         extras=tuple(extras),
+        groups=tuple(groups),
         no_dev=no_dev,
     )
 
