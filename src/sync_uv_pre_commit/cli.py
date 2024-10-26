@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -49,8 +50,10 @@ def resolve_pyproject(
 ) -> Path:
     pyproject, temp_directory = Path(pyproject), Path(temp_directory)
     requirements_path = temp_directory / "requirements.txt"
+    new_pyproject = temp_directory / "pyproject.toml"
 
-    pyproject_dict = read_pyproject(pyproject)
+    shutil.copy(pyproject, new_pyproject)
+    pyproject_dict = read_pyproject(new_pyproject)
     logger.debug("before validate extras: %s", extras)
     valid_extras = find_valid_extras(pyproject_dict)
     logger.debug("valid extras: %s", valid_extras)
@@ -80,7 +83,7 @@ def resolve_pyproject(
     logger.info("Running command:\n    %s", " ".join(command))
 
     uv_process = subprocess.run(  # noqa: S603
-        command, check=False, capture_output=True, text=True
+        command, cwd=temp_directory, check=False, capture_output=True, text=True
     )
     try:
         uv_process.check_returncode()
