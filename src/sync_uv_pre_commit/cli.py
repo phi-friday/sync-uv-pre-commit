@@ -227,7 +227,6 @@ def check_uv_version() -> None:
             sys.exit(ExitCode.PARSING)
         sys.exit(ExitCode.UNKNOWN)
 
-    logger.info("python version: %s", sys.version_info)
     version = process.stdout.strip().split()[1]
     logger.info("uv version: %s", version)
 

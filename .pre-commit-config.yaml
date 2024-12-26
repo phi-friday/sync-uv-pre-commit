@@ -7,7 +7,7 @@ repos:
           - "-l DEBUG"
           - "-g dev"
     repo: https://github.com/phi-friday/sync-uv-pre-commit
-    rev: v0.6.4
+    rev: v0.6.3
 
   - hooks:
       - id: ruff
