@@ -1,0 +1,10 @@
+# /// script
+# requires-python = "{{ requires_python }}"
+# dependencies = [
+{% for dependency in dependencies -%}
+#     "{{ dependency }}",
+{% endfor -%}
+# ]
+# ///
+
+{{ export_script }}

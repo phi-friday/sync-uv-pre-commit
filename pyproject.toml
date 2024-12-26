@@ -12,7 +12,7 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: Implementation :: CPython",
 ]
-scripts = { sync_uv_pre_commit = "sync_uv_pre_commit.cli:main" }
+scripts = { generate_cli_script = "sync_uv_pre_commit.render:generate_script" }
 dependencies = [
     "packaging",
     "pre-commit>=3.5.0",
@@ -23,6 +23,7 @@ dependencies = [
 dev = [
     "ruff==0.8.4",
     "poethepoet>=0.27.0",
+    "jinja2>=3.1.5",
 ]
 
 [tool.uv]

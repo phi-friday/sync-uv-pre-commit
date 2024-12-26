@@ -1,8 +1,8 @@
 - id: sync-uv-pre-commit
   name: Sync uv and pre commit
   description: Sync uv and pre commit
-  language: python
-  entry: "sync_uv_pre_commit"
+  language: script
+  entry: "uv run script.py"
   minimum_pre_commit_version: "3.5.0"
   require_serial: true
   always_run: true
