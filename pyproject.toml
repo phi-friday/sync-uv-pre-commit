@@ -21,7 +21,7 @@ dependencies = [
 ]
 [dependency-groups]
 dev = [
-    "ruff==0.7.1",
+    "ruff==0.8.4",
     "poethepoet>=0.27.0",
 ]
 
