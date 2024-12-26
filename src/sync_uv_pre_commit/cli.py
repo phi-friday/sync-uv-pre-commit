@@ -84,6 +84,8 @@ def resolve_pyproject(
     ]
     extras = tuple(ext for extra in extras if (ext := extra.strip()) in valid_extras)
     logger.debug("extras: %s", extras)
+    groups = tuple(grp for group in groups if (grp := group.strip()) in valid_groups)
+    logger.debug("groups: %s", groups)
     if extras:
         command.extend(chain.from_iterable(("--extra", extra) for extra in extras))
     if groups:
